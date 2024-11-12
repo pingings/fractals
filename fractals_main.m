@@ -7,7 +7,7 @@ Examples:
 
 axiom = "F+F+F+F";
 grammar = "F+F-F-FF+F+F-F";
-iteration= 5;
+iteration = 5;
 
 %}
 %%%%%%%%%%%%%%%%%%%%%
@@ -23,12 +23,16 @@ curr_pos = origin;
 x_trail = [curr_pos(1)]; % initialise w the starting position
 y_trail = [curr_pos(2)];
 
+% stack
+stack = [];
+stack.curr_angles = [];
+
 % inputs
 axiom = "F+F+F+F";
-grammar = "F+F-F-FF+F+F-F";
-angle_delta = 95; % in deg; e.g. 90 means +/- will be right angle turns
+grammar = "FF+F-F+F+FF";
+angle_delta = 90; % in deg; e.g. 90 means +/- will be right angle turns
 length = 1; % e.g. 1 means each F is 1 unit length
-iterations = 4;
+iterations = 3;
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -39,7 +43,7 @@ a = char(axiom);
 a = a(~isspace(a));
 
 % ## 2) check syntax
-% TODO finish this
+% TODO finish this - check balanced push/pop [/]; 
 for c = g
     disp(c);
 end
@@ -71,6 +75,12 @@ for c = string
     elseif c == 'F' % TODO don't hardcode the char here
         [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, length, x_trail, y_trail);
         curr_pos = [x,y];     
+    elseif c == '['
+        stack = push(stack, curr_pos, curr_angle);
+    elseif c == ']'
+        stack = pop(stack);
+    else
+        error("unexpected character in string");
     end
 end
 
