@@ -7,10 +7,17 @@ Examples:
 
 axiom = "F+F+F+F";
 grammar = "F+F-F-FF+F+F-F";
+angle_delta = 90;
 iteration = 5;
 
 axiom = "F+F+F+F";
 grammar = "FF+F-F+F+FF";
+
+BRANCH:
+axiom = "F";
+grammar = "FF+[+F-F-F]-[-F+F+F]";
+angle_delta = 22.5;
+iterations = 5;
 
 %}
 %%%%%%%%%%%%%%%%%%%%%
@@ -32,9 +39,19 @@ stack = [];
 % inputs
 axiom = "F";
 grammar = "FF+[+F-F-F]-[-F+F+F]";
-angle_delta = 22.5; % in deg; e.g. 90 means +/- will be right angle turns
+angle_delta = 22.5;
+iterations = 4;
 length = 1; % e.g. 1 means each F is 1 unit length
-iterations = 3;
+
+%%%%%%%%%%%%%%%%%%%%%
+
+% setup the canvas
+x_min = 0;
+x_max = 100;
+y_min = 0;
+y_max = 100;
+axis([x_min x_max y_min y_max]);
+hold on; % Keep the plot active for further drawing
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -68,7 +85,6 @@ string = temp1;
 
 % ## 3) pass thru the final string and get the coords for plotting
 for c = string
-    disp(c)
     if c == '+'
         % turn right
         curr_angle = mod(curr_angle+angle_delta,full_rotation);
@@ -82,6 +98,8 @@ for c = string
         stack = push(stack, curr_pos, curr_angle);
     elseif c == ']'
         [stack, curr_pos, curr_angle] = pop(stack);
+        plot(x_trail, y_trail, 'LineWidth', 1, 'Color', 'black');
+        x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
     else
         error("unexpected character in string");
     end
@@ -89,16 +107,8 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%
 
-% setup the canvas
-x_min = 0;
-x_max = 100;
-y_min = 0;
-y_max = 100;
-axis([x_min x_max y_min y_max]);
-hold on; % Keep the plot active for further drawing
-
 % define each point on the trail
-plot(x_trail, y_trail, 'LineWidth', 1, 'Color', 'black'); % 'LineWidth' and 'Color' are optional
+plot(x_trail, y_trail, 'LineWidth', 1, 'Color', 'black');
 
 % this is a separate line
 %x_coords = [6,8];

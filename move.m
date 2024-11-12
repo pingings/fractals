@@ -4,7 +4,7 @@ function [x, y, x_trail, y_trail] = move(curr_pos, angle, distance, x_trail, y_t
     % e.g. move([5,5], 90, 1) returns [5,4]
     % also keeps track of previous positions
 
-    angleRad = deg2rad(angle);
+    angleRad = deg2rad(angle+90);
     deltaX = distance * cos(angleRad);
     deltaY = distance * sin(angleRad);
 
