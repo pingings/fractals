@@ -9,6 +9,9 @@ axiom = "F+F+F+F";
 grammar = "F+F-F-FF+F+F-F";
 iteration = 5;
 
+axiom = "F+F+F+F";
+grammar = "FF+F-F+F+FF";
+
 %}
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -25,12 +28,11 @@ y_trail = [curr_pos(2)];
 
 % stack
 stack = [];
-stack.curr_angles = [];
 
 % inputs
-axiom = "F+F+F+F";
-grammar = "FF+F-F+F+FF";
-angle_delta = 90; % in deg; e.g. 90 means +/- will be right angle turns
+axiom = "F";
+grammar = "FF+[+F-F-F]-[-F+F+F]";
+angle_delta = 22.5; % in deg; e.g. 90 means +/- will be right angle turns
 length = 1; % e.g. 1 means each F is 1 unit length
 iterations = 3;
 
@@ -45,7 +47,7 @@ a = a(~isspace(a));
 % ## 2) check syntax
 % TODO finish this - check balanced push/pop [/]; 
 for c = g
-    disp(c);
+    %disp(c);
 end
 
 % ## 2) expand the axiom by one iteration into the string, using the gramr
@@ -66,6 +68,7 @@ string = temp1;
 
 % ## 3) pass thru the final string and get the coords for plotting
 for c = string
+    disp(c)
     if c == '+'
         % turn right
         curr_angle = mod(curr_angle+angle_delta,full_rotation);
@@ -78,7 +81,7 @@ for c = string
     elseif c == '['
         stack = push(stack, curr_pos, curr_angle);
     elseif c == ']'
-        stack = pop(stack);
+        [stack, curr_pos, curr_angle] = pop(stack);
     else
         error("unexpected character in string");
     end
