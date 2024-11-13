@@ -8,10 +8,12 @@ Examples:
 axiom = "F+F+F+F";
 grammar = "F+F-F-FF+F+F-F";
 angle_delta = 90;
-iteration = 5;
+iterations = 5;
 
 axiom = "F+F+F+F";
 grammar = "FF+F-F+F+FF";
+angle_delta = 90;
+iterations = 5;
 
 BRANCH:
 axiom = "F";
@@ -26,21 +28,24 @@ iterations = 5;
 origin = [5,5]; % the starting point of the plot
 full_rotation = 360; % in case of change to radians idk
 starting_angle = 0;
+colours = {'red','yellow','green','blue'};
+colour_main = 'black';
 
 % variables
 curr_angle = starting_angle; % angle where 0 is right/along the x axis
 curr_pos = origin;
 x_trail = [curr_pos(1)]; % initialise w the starting position
 y_trail = [curr_pos(2)];
+colours_ptr = 1;
 
 % stack
 stack = [];
 
 % inputs
-axiom = "F";
-grammar = "FF+[+F-F-F]-[-F+F+F]";
-angle_delta = 22.5;
-iterations = 4;
+axiom = "F+F+F+F";
+grammar = "F+F-F-FF+F+F-F";
+angle_delta = 90;
+iterations = 5;
 length = 1; % e.g. 1 means each F is 1 unit length
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -98,7 +103,11 @@ for c = string
         stack = push(stack, curr_pos, curr_angle);
     elseif c == ']'
         [stack, curr_pos, curr_angle] = pop(stack);
-        plot(x_trail, y_trail, 'LineWidth', 1, 'Color', 'black');
+        
+        next_colour = colours{colours_ptr};
+        plot(x_trail, y_trail, 'LineWidth', 1, 'Color', next_colour);
+        colours_ptr = 1+mod(colours_ptr,size(colours,2));
+
         x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
     else
         error("unexpected character in string");
@@ -107,8 +116,9 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%
 
-% define each point on the trail
-plot(x_trail, y_trail, 'LineWidth', 1, 'Color', 'black');
+% if there's no push/pop then the whole thing will just be drawn at this
+% point
+plot(x_trail, y_trail, 'LineWidth', 1, 'Color', colour_main);
 
 % this is a separate line
 %x_coords = [6,8];
