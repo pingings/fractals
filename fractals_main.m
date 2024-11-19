@@ -28,7 +28,6 @@ iterations = 5;
 origin = [5,5]; % the starting point of the plot
 full_rotation = 360; % in case of change to radians idk
 starting_angle = 0;
-colours = {'red','yellow','green','blue'};
 colour_main = 'black';
 gram_chars = {}; % these will be populated when grammar is formatted
 gram_rules = {};
@@ -125,11 +124,8 @@ for c = string
         stack = push(stack, curr_pos, curr_angle);
     elseif c == ']'
         [stack, curr_pos, curr_angle] = pop(stack);
+        plot(x_trail, y_trail, 'LineWidth', 1, 'Color', colour_main);
         
-        next_colour = colours{colours_ptr};
-        plot(x_trail, y_trail, 'LineWidth', 1, 'Color', next_colour);
-        colours_ptr = 1+mod(colours_ptr,size(colours,2));
-
         x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
         x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
 
