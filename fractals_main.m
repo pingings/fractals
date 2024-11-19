@@ -49,7 +49,7 @@ stack = [];
 axiom = "X";
 grammar = {"F --> FF", "X --> F-[[X]+X]+F[+FX]-X"};
 angle_delta = 22.5;
-iterations = 5;
+iterations = 6;
 unit_length = 1; % e.g. 1 means each F is 1 unit length
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -161,11 +161,10 @@ y_padding = 0.1 * (max(y_all) - min(y_all));
 % Set axis limits with padding
 axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
 
-% Plot the data
-%plot(x_all, y_all);
-
-% export graphics
-exportgraphics(gcf, 'temp.png', 'Resolution', round(max(max(x_all, y_all))));
+% export graphics#
+disp("Exporting...");
+exportgraphics(gcf, 'temp.png', 'Resolution', 512);
+disp("Finished exporting!");
 
 hold off;
 
