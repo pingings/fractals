@@ -36,10 +36,9 @@ gram_rules = {};
 % variables
 curr_angle = starting_angle; % angle where 0 is right/along the x axis
 curr_pos = origin;
-x_trail = [curr_pos(1)]; % initialise w the starting position
-y_trail = [curr_pos(2)];
-x_all = [curr_pos(1)];
-y_all = [curr_pos(2)];
+x_all = {curr_pos(1)};
+y_all = {curr_pos(2)};
+ptr_all = 1; % ptr for length of x_all and y_all (always same length)
 colours_ptr = 1;
 
 % stack
@@ -94,11 +93,12 @@ end
     %disp(c);
 %end
 
+
 % ## 3) rewrite the axiom [iteration] times to get the string
 temp1 = a;
 for i=1:iterations
     temp2 = [];
-    for n = 1:length(temp1)
+    for n = 1:length(temp1):-1:1
         if (ismember(temp1(n),gram_chars)) % if the char read is a char in the grammar
             gram_index = find(strcmp(temp1(n), gram_chars));
             temp2 = [temp2, gram_rules{gram_index}]; % replace all F with the full F-->..
@@ -110,6 +110,7 @@ for i=1:iterations
 end
 string = temp1;
 
+
 % ## 4) pass thru the final string and get the coords for plotting
 for c = string
     if c == '+'
@@ -119,19 +120,16 @@ for c = string
         % turn left
         curr_angle = mod(curr_angle-angle_delta,full_rotation);
     elseif c == 'F' % TODO don't hardcode the char here
-        [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, unit_length, x_trail, y_trail);
+        [x,y,x_all,y_all] = move(curr_pos, curr_angle, unit_length, x_all, y_all, ptr_all);
         curr_pos = [x,y];     
     elseif c == '['
         stack = push(stack, curr_pos, curr_angle);
     elseif c == ']'
         [stack, curr_pos, curr_angle] = pop(stack);
-        
-        next_colour = colours{colours_ptr};
-        plot(x_trail, y_trail, 'LineWidth', 1, 'Color', next_colour);
-        colours_ptr = 1+mod(colours_ptr,size(colours,2));
 
-        x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
-        x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
+        % start a new list in x/y_all
+        ptr_all = ptr_all + 1;
+        x_all{ptr_all} = []; y_all{ptr_all} = [];
 
     elseif ismember(c, gram_chars)
         % this is ok - just ignore - no drawing instructions from these
@@ -143,9 +141,12 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%
 
-% if there's no push/pop then the whole thing will just be drawn at this
-% point
-plot(x_trail, y_trail, 'LineWidth', 1, 'Color', colour_main);
+% plot all the arrays of coords
+for i = 1:length(x_all)
+    next_colour = colours{colours_ptr};
+    plot(x_all{i}, y_all{i}, 'LineWidth', 1, 'Color', next_colour);
+    colours_ptr = 1+mod(colours_ptr,size(colours,2));
+end
 
 % some formating
 xticks([]);
@@ -154,14 +155,16 @@ grid off;
 axis off;
 axis equal;
 
+min_x = 0; max_x = 100; min_y = 0; max_y = 100;
+
 % Add some padding (e.g., 10% of the range)
-x_padding = 0.1 * (max(x_all) - min(x_all));
-y_padding = 0.1 * (max(y_all) - min(y_all));
+x_padding = 0.1 * (max_x - min_x);
+y_padding = 0.1 * (max_y - min_y);
 
 % Set axis limits with padding
-axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
+axis([min_x - x_padding, x_max + x_padding, min_y - y_padding, max_y + y_padding]);
 
-% export graphics#
+% export graphics
 disp("Exporting...");
 exportgraphics(gcf, 'temp.png', 'Resolution', 512);
 disp("Finished exporting!");

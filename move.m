@@ -1,4 +1,4 @@
-function [x, y, x_trail, y_trail] = move(curr_pos, angle, distance, x_trail, y_trail)
+function [x, y, x_all, y_all] = move(curr_pos, angle, distance, x_all, y_all, ptr_all)
 
     % given a currentPosition, moves units in angle and returns new position
     % e.g. move([5,5], 90, 1) returns [5,4]
@@ -11,7 +11,7 @@ function [x, y, x_trail, y_trail] = move(curr_pos, angle, distance, x_trail, y_t
     x = curr_pos(1) + deltaX;
     y = curr_pos(2) + deltaY;
 
-    x_trail = [x_trail, x];
-    y_trail = [y_trail, y];
+    x_all{ptr_all} = [x_all{ptr_all}, x];
+    y_all{ptr_all} = [y_all{ptr_all}, y];
 
 end
