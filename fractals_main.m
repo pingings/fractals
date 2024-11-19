@@ -30,65 +30,87 @@ full_rotation = 360; % in case of change to radians idk
 starting_angle = 0;
 colours = {'red','yellow','green','blue'};
 colour_main = 'black';
+gram_chars = {}; % these will be populated when grammar is formatted
+gram_rules = {};
 
 % variables
 curr_angle = starting_angle; % angle where 0 is right/along the x axis
 curr_pos = origin;
 x_trail = [curr_pos(1)]; % initialise w the starting position
 y_trail = [curr_pos(2)];
+x_all = [curr_pos(1)];
+y_all = [curr_pos(2)];
 colours_ptr = 1;
 
 % stack
 stack = [];
 
 % inputs
-axiom = "F+F+F+F";
-grammar = "F+F-F-FF+F+F-F";
-angle_delta = 90;
+axiom = "X";
+grammar = {"F --> FF", "X --> F-[[X]+X]+F[+FX]-X"};
+angle_delta = 22.5;
 iterations = 5;
-length = 1; % e.g. 1 means each F is 1 unit length
+unit_length = 1; % e.g. 1 means each F is 1 unit length
 
 %%%%%%%%%%%%%%%%%%%%%
 
 % setup the canvas
 x_min = 0;
-x_max = 100;
+x_max = 1000;
 y_min = 0;
-y_max = 100;
+y_max = 1000;
 axis([x_min x_max y_min y_max]);
 hold on; % Keep the plot active for further drawing
 
 %%%%%%%%%%%%%%%%%%%%%
 
-% ## 1) format the axiom and grammar into list; remove whitespace
-g = char(grammar);
-g = g(~isspace(g));
-a = char(axiom);
-a = a(~isspace(a));
+% ## 1) format and rewrite
+for i = 1:size(grammar,2)
 
-% ## 2) check syntax
-% TODO finish this - check balanced push/pop [/]; 
-for c = g
-    %disp(c);
+    % rewrite axiom as char array
+    a = char(axiom);
+    a = a(~isspace(a));
+
+    % for each rule, first convert to char array
+    r = grammar{i};
+    r = char(r);
+    r = r(~isspace(r));
+
+    % split into LHS and RHS, on "-->"
+    parts = split(r, "-->");
+    if size(parts,1) ~= 2
+        error("rule found with no or multiple '-->'");
+    end
+    gram_chars = [gram_chars; parts(1)];
+    gram_rules = [gram_rules; parts(2)];
+   
 end
 
-% ## 2) expand the axiom by one iteration into the string, using the gramr
+
+% ## 2) check syntax
+% TODO finish this - check balanced push/pop [/]; not multiple rules per
+% LHS; 
+%for c = g
+    %disp(c);
+%end
+
+% ## 3) rewrite the axiom [iteration] times to get the string
 temp1 = a;
-temp2 = [];
 for i=1:iterations
-    temp2 = []; % copy the prev output of this
-    for c=temp1
-        if (c=='F') % TODO don't hardcode the F
-            temp2 = [temp2, g]; % replace all F with the full F-->..
+    temp2 = [];
+    for n = 1:length(temp1)
+        if (ismember(temp1(n),gram_chars)) % if the char read is a char in the grammar
+            gram_index = find(strcmp(temp1(n), gram_chars));
+            temp2 = [temp2, gram_rules{gram_index}]; % replace all F with the full F-->..
         else
-            temp2 = [temp2, c];
+            temp2 = [temp2, temp1(n)]; 
         end
     end
     temp1 = temp2; % copy over ready to clear temp2 again
 end
 string = temp1;
 
-% ## 3) pass thru the final string and get the coords for plotting
+% ## 4) pass thru the final string and get the coords for plotting
 for c = string
     if c == '+'
         % turn right
@@ -97,7 +119,7 @@ for c = string
         % turn left
         curr_angle = mod(curr_angle-angle_delta,full_rotation);
     elseif c == 'F' % TODO don't hardcode the char here
-        [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, length, x_trail, y_trail);
+        [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, unit_length, x_trail, y_trail);
         curr_pos = [x,y];     
     elseif c == '['
         stack = push(stack, curr_pos, curr_angle);
@@ -108,8 +130,13 @@ for c = string
         plot(x_trail, y_trail, 'LineWidth', 1, 'Color', next_colour);
         colours_ptr = 1+mod(colours_ptr,size(colours,2));
 
+        x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
         x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
+
+    elseif ismember(c, gram_chars)
+        % this is ok - just ignore - no drawing instructions from these
     else
+        disp(c);
         error("unexpected character in string");
     end
 end
@@ -120,12 +147,26 @@ end
 % point
 plot(x_trail, y_trail, 'LineWidth', 1, 'Color', colour_main);
 
-% this is a separate line
-%x_coords = [6,8];
-%y_coords = [5,3];
-%plot(x_coords, y_coords, 'LineWidth', 1, 'Color', 'black'); % 'LineWidth' and 'Color' are optional
-
 % some formating
+xticks([]);
+yticks([]);
 grid off;
+axis off;
 axis equal;
+
+% Add some padding (e.g., 10% of the range)
+x_padding = 0.1 * (max(x_all) - min(x_all));
+y_padding = 0.1 * (max(y_all) - min(y_all));
+
+% Set axis limits with padding
+axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
+
+% Plot the data
+%plot(x_all, y_all);
+
+% export graphics
+exportgraphics(gcf, 'temp.png', 'Resolution', round(max(max(x_all, y_all))));
+
 hold off;
+
+%%%%%%%%%%%%%%%%%%%%%
