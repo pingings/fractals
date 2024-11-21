@@ -4,6 +4,8 @@ clear;
 % these aren't always set, so define them here
 length_line = 1;
 length_scale = 1;
+colour_main = 'black';
+colours = {'red','yellow','green','blue'};
 
 %%%%%%%%%%%%%%%%%%%%%
 %{
@@ -34,30 +36,25 @@ angle_delta = 20;
 iterations = 10;
 
 5) test for > <
-axiom = "a"
-grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'}
-angle_delta = 45
-iterations = 5
-
-axiom = "a"
-grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'}
-angle_delta = 45
-iterations = 5
+axiom = "a";
+grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'};
+angle_delta = 45;
+iterations = 5;
 
 --------------------------
-
 axiom = 
 grammar = 
 angle_delta = 
 iterations = 
+--------------------------
 
 %}
 
 axiom = "a";
 grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'};
 angle_delta = 45;
-iterations = 15;
-length_scale = 1.36;
+iterations = 8;
+colours = get_gradient('#338811','#44DDFF',8);
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -66,7 +63,6 @@ line_width = 0.2; % width of the plotted lines
 origin = [5,5]; % the starting point of the plot
 full_rotation = 360; % in case of change to radians idk
 starting_angle = 0;
-colour_main = 'black';
 gram_chars = {}; % these will be populated when grammar is formatted
 gram_rules = {};
 
@@ -127,6 +123,8 @@ end
 % ## 3) rewrite the axiom [iteration] times to get the string
 temp1 = a;
 for i=1:iterations
+
+    % write out the string for each iteration up until [iteration]
     temp2 = [];
     for n = 1:length(temp1)
         if (ismember(temp1(n),gram_chars)) % if the char read is a char in the grammar
@@ -137,65 +135,66 @@ for i=1:iterations
         end
     end
     temp1 = temp2; % copy over ready to clear temp2 again
-end
-string = temp1;
 
-% ## 4) pass thru the final string and get the coords for plotting
-for c = string
-    if c == '+'
-        % turn right
-        curr_angle = mod(curr_angle+angle_delta,full_rotation);
-    elseif c == '-'
-        % turn left
-        curr_angle = mod(curr_angle-angle_delta,full_rotation);
-    elseif c == 'F' % TODO don't hardcode the char here
-        [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, length_line, x_trail, y_trail);
-        curr_pos = [x,y];
-    elseif c == '['
-        stack = push(stack, curr_pos, curr_angle);
-    elseif c == ']'
-        [stack, curr_pos, curr_angle] = pop(stack);
-        plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colour_main);
-
-        x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
-        x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
-    elseif c == '<'
-        length_line = length_line / length_scale;
-    elseif c == '>'
-        length_line = length_line * length_scale;
-    elseif ismember(c, gram_chars)
-        % this is ok - just ignore - no drawing instructions from these
-    else
-        disp(c);
-        error("unexpected character in string");
+    % now generate and plot [temp1] in a colour
+    string = temp1;
+    
+    % ## 4) pass thru the string and get the coords for plotting
+    for c = string
+        if c == '+'
+            % turn right
+            curr_angle = mod(curr_angle+angle_delta,full_rotation);
+        elseif c == '-'
+            % turn left
+            curr_angle = mod(curr_angle-angle_delta,full_rotation);
+        elseif c == 'F' % TODO don't hardcode the char here
+            [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, length_line, x_trail, y_trail);
+            curr_pos = [x,y];
+        elseif c == '['
+            stack = push(stack, curr_pos, curr_angle);
+        elseif c == ']'
+            [stack, curr_pos, curr_angle] = pop(stack);
+            plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colours{colours_ptr});
+    
+            x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
+            x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
+        elseif c == '<'
+            length_line = length_line / length_scale;
+        elseif c == '>'
+            length_line = length_line * length_scale;
+        elseif ismember(c, gram_chars)
+            % this is ok - just ignore - no drawing instructions from these
+        else
+            disp(c);
+            error("unexpected character in string");
+        end
     end
+
+    % if there's no push/pop then the whole thing will just be drawn at this
+    % point
+    colours_ptr = mod(colours_ptr, length(colours)) + 1;
+    plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colours{colours_ptr});
+    
+    % some formating
+    xticks([]);
+    yticks([]);
+    grid off;
+    axis off;
+    axis equal;
+    
+    % Add some padding (e.g., 10% of the range)
+    x_padding = 0.1 * (max(x_all) - min(x_all));
+    y_padding = 0.1 * (max(y_all) - min(y_all));
+    
+    % Set axis limits with padding
+    axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
+    
+    hold on;
+    fprintf("iteration #%d done\n", i);
+
 end
 
-%%%%%%%%%%%%%%%%%%%%%
-
-% if there's no push/pop then the whole thing will just be drawn at this
-% point
-plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colour_main);
-
-% some formating
-xticks([]);
-yticks([]);
-grid off;
-axis off;
-axis equal;
-
-% Add some padding (e.g., 10% of the range)
-x_padding = 0.1 * (max(x_all) - min(x_all));
-y_padding = 0.1 * (max(y_all) - min(y_all));
-
-% Set axis limits with padding
-%axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
-
-% export graphics
+% export the final graph
 disp("Exporting...");
 exportgraphics(gcf, 'temp.png', 'Resolution', 512);
 disp("Finished exporting!");
-
-hold off;
-
-%%%%%%%%%%%%%%%%%%%%%
