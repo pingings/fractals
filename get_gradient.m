@@ -1,18 +1,31 @@
-function [colours] = get_gradient(hex1,hex2,step)
+function [colours] = get_gradient(hex1,hex2,step,varargin)
     
     % maps e.g. '#FF00AA' -> [1 0 0.667]
     rgb1 = hex2rgb(hex1);
     rgb2 = hex2rgb(hex2);
-    
-    % e.g. linspace(0.1, 0.4, 4) = [0.1 0.2 0.3 0.4]
-    r = linspace(rgb1(1), rgb2(1), step);
-    g = linspace(rgb1(2), rgb2(2), step);
-    b = linspace(rgb1(3), rgb2(3), step);
-    
-    % Convert back to hex
-    colours = cell(1, step);
+
+    % get gradient function
+    t = linspace(0, 1, step);
+
+    % if gradient function passed,
+    if (length(varargin) >= 1)
+        grad_func = varargin{1};
+
+        % apply function to linspace
+        if strcmp(grad_func, "exp")
+            t = t.^2;
+        elseif strcmp(grad_func, "exp2")
+            % TODO ...
+        end
+
+    end
+
+    gradient = (1 - t') .* rgb1 + t' .* rgb2;
+
+    % init empty 1D cell array for colours
+    colours = cell(step,1);
     for i = 1:step
-        colours{i} = rgb2hex([r(i), g(i), b(i)]);
+        colours{i} =  rgb2hex(gradient(i, :));
     end
 
 end

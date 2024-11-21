@@ -187,7 +187,7 @@ for i=1:iterations
     y_padding = 0.1 * (max(y_all) - min(y_all));
     
     % Set axis limits with padding
-    axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
+    %axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
     
     hold on;
     fprintf("iteration #%d done\n", i);
