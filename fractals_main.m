@@ -114,11 +114,28 @@ end
 
 
 % ## 2) check syntax
-% TODO finish this - check balanced push/pop [/]; not multiple rules per
-% LHS; 
-%for c = g
-    %disp(c);
-%end
+chars_are_unique = ( length(unique(gram_chars)) == length(gram_chars) );
+if ~chars_are_unique
+    error("Error in grammar: found multiple LHS per RHS");
+end
+
+stack_gram = 0;
+for i=1:length(gram_rules)
+    for j=1:length(gram_rules{i})
+        c = gram_rules{i}(j);
+        if strcmp(c,'[')
+            stack_gram = stack_gram + 1;
+        elseif strcmp(c,']')
+            stack_gram = stack_gram - 1;
+            if stack_gram < 0
+                error("Error in grammar: unbalanced push/pop brackets");
+            end
+        end 
+    end
+    if stack_gram > 0
+        error("Error in grammar: unbalanced push/pop brackets");
+    end
+end
 
 % ## 3) rewrite the axiom [iteration] times to get the string
 temp1 = a;
