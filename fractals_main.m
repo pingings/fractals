@@ -53,8 +53,8 @@ iterations =
 axiom = "a";
 grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'};
 angle_delta = 45;
-iterations = 8;
-colours = get_gradient('#338811','#44DDFF',8);
+iterations = 1;
+colours = get_gradient('#338811','#44DDFF',10);
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -112,7 +112,6 @@ for i = 1:size(grammar,2)
    
 end
 
-
 % ## 2) check syntax
 chars_are_unique = ( length(unique(gram_chars)) == length(gram_chars) );
 if ~chars_are_unique
@@ -158,6 +157,8 @@ for i=1:iterations
     
     % ## 4) pass thru the string and get the coords for plotting
     for c = string
+        flag = 0;
+
         if c == '+'
             % turn right
             curr_angle = mod(curr_angle+angle_delta,full_rotation);
@@ -167,14 +168,16 @@ for i=1:iterations
         elseif c == 'F' % TODO don't hardcode the char here
             [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, length_line, x_trail, y_trail);
             curr_pos = [x,y];
-        elseif c == '['
+        elseif c == '[' 
             stack = push(stack, curr_pos, curr_angle);
         elseif c == ']'
             [stack, curr_pos, curr_angle] = pop(stack);
             plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colours{colours_ptr});
-    
+            disp(colours{colours_ptr});
             x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
             x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
+            flag = 1;
+
         elseif c == '<'
             length_line = length_line / length_scale;
         elseif c == '>'
@@ -187,10 +190,15 @@ for i=1:iterations
         end
     end
 
+    if ~flag
+        x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
+    end
+
     % if there's no push/pop then the whole thing will just be drawn at this
     % point
     colours_ptr = mod(colours_ptr, length(colours)) + 1;
     plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colours{colours_ptr});
+    disp(colours{colours_ptr});
     
     % some formating
     xticks([]);
@@ -199,17 +207,26 @@ for i=1:iterations
     axis off;
     axis equal;
     
-    % Add some padding (e.g., 10% of the range)
-    x_padding = 0.1 * (max(x_all) - min(x_all));
-    y_padding = 0.1 * (max(y_all) - min(y_all));
-    
-    % Set axis limits with padding
-    %axis([min(x_all) - x_padding, max(x_all) + x_padding, min(y_all) - y_padding, max(y_all) + y_padding]);
-    
     hold on;
     fprintf("iteration #%d done\n", i);
 
 end
+
+x_max = max(x_all); x_min = min(x_all);
+y_max = max(y_all); y_min = min(y_all);
+
+if (x_max - x_min) <= 0
+    x_max = x_max + 1;
+end
+
+if (y_max - y_min) <= 0
+    y_max = y_max + 1;
+end
+
+x_padding = 0.1 * (max(x_all) - min(x_all));
+y_padding = 0.1 * (max(y_all) - min(y_all));
+
+axis([x_min - x_padding, x_max + x_padding, y_min - y_padding, y_max + y_padding]);
 
 % export the final graph
 disp("Exporting...");
