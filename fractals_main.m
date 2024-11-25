@@ -1,41 +1,56 @@
 disp("-----");
 clear;
 
-% these aren't always set, so define them here
+% constants that might be overwritten
 length_line = 1;
 length_scale = 1;
+line_width = 0.2; % width of the plotted lines
 colour_main = 'black';
 colours = {'red','yellow','green','blue'};
 
-%%%%%%%%%%%%%%%%%%%%%
 %{
-Examples:
 
-1)
+%%%%%%%%%%%%%%%%%%%%%
+
+EXAMPLE COLOURS:
+
+% blue -> pink
+colours = get_gradient('#7bc2db','#f518ed',10, "exp");
+
+% green -> blue
+colours = get_gradient('#338811','#44DDFF',10);
+
+
+
+%%%%%%%%%%%%%%%%%%%%%
+
+EXAMPLE GRAMMARS:
+
+% 1) snowflake
 axiom = "F+F+F+F";
 grammar = {"F -> F+F-F-FF+F+F-F"};
 angle_delta = 90;
 iterations = 5;
 
-2)
+% 2) bricks
 axiom = "F+F+F+F";
 grammar = {"F -> FF+F-F+F+FF"};
 angle_delta = 90;
 iterations = 5;
 
-3) BRANCH:
+% 3) branch
 axiom = "F";
 grammar = {"F -> FF+[+F-F-F]-[-F+F+F]"};
 angle_delta = 22.5;
 iterations = 5;
 
-4)
+% 4) nicer branch
 axiom = "VZFFF";
 grammar = {"V -> [+++W][---W]YV", "W -> +X[-W]Z", "X -> -W[+X]Z", "Y -> YZ", "Z -> [-FFF][+FFF]F"};
 angle_delta = 20;
 iterations = 10;
 
-5) test for > <
+% 5) test for > <
 axiom = "a";
 grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'};
 angle_delta = 45;
@@ -50,21 +65,23 @@ iterations =
 
 %}
 
-axiom = "a";
-grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'};
-angle_delta = 45;
-iterations = 1;
+axiom = "F+F+F+F";
+grammar = {"F -> F+F-F-FF+F+F-F"};
+angle_delta = 90;
+iterations = 5;
 colours = get_gradient('#338811','#44DDFF',10);
+line_width = 0.07; % width of the plotted lines
+
 
 %%%%%%%%%%%%%%%%%%%%%
 
 % constants
-line_width = 0.2; % width of the plotted lines
 origin = [5,5]; % the starting point of the plot
 full_rotation = 360; % in case of change to radians idk
 starting_angle = 0;
 gram_chars = {}; % these will be populated when grammar is formatted
 gram_rules = {};
+fwd_char = 'F';
 
 % variables
 curr_angle = starting_angle; % angle where 0 is right/along the x axis
@@ -165,7 +182,7 @@ for i=1:iterations
         elseif c == '-'
             % turn left
             curr_angle = mod(curr_angle-angle_delta,full_rotation);
-        elseif c == 'F' % TODO don't hardcode the char here
+        elseif c == fwd_char
             [x,y,x_trail,y_trail] = move(curr_pos, curr_angle, length_line, x_trail, y_trail);
             curr_pos = [x,y];
         elseif c == '[' 
@@ -173,7 +190,6 @@ for i=1:iterations
         elseif c == ']'
             [stack, curr_pos, curr_angle] = pop(stack);
             plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colours{colours_ptr});
-            disp(colours{colours_ptr});
             x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
             x_trail = [curr_pos(1)]; y_trail = [curr_pos(2)];
             flag = 1;
@@ -198,7 +214,6 @@ for i=1:iterations
     % point
     colours_ptr = mod(colours_ptr, length(colours)) + 1;
     plot(x_trail, y_trail, 'LineWidth', line_width, 'Color', colours{colours_ptr});
-    disp(colours{colours_ptr});
     
     % some formating
     xticks([]);
@@ -212,6 +227,7 @@ for i=1:iterations
 
 end
 
+% setup axis sizes
 x_max = max(x_all); x_min = min(x_all);
 y_max = max(y_all); y_min = min(y_all);
 
@@ -230,5 +246,5 @@ axis([x_min - x_padding, x_max + x_padding, y_min - y_padding, y_max + y_padding
 
 % export the final graph
 disp("Exporting...");
-exportgraphics(gcf, 'temp.png', 'Resolution', 512);
+exportgraphics(gcf, 'temp.png', 'Resolution', 4196);
 disp("Finished exporting!");
