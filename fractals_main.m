@@ -7,6 +7,7 @@ length_scale = 1;
 line_width = 0.2; % width of the plotted lines
 colour_main = 'black';
 colours = {'red','yellow','green','blue'};
+iterations = 4;
 
 %{
 
@@ -19,8 +20,6 @@ colours = get_gradient('#7bc2db','#f518ed',10, "exp");
 
 % green -> blue
 colours = get_gradient('#338811','#44DDFF',10);
-
-
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -56,6 +55,19 @@ grammar = {'F -> >F<', 'a -> F[+x]Fb', 'b -> F[-y]Fa', 'x -> a', 'y -> b'};
 angle_delta = 45;
 iterations = 5;
 
+% 6) nicest branch
+axiom = "X";
+grammar = {"F -> FF", "X -> F-[[X]+X]+F[+FX]-X"};
+angle_delta = 22.5;
+iterations = 6;
+colours = get_gradient('#7bc2db','#f518ed',10, "exp");
+
+% 7) flower
+axiom = 'FX';
+grammar = {'X -> >[-FX]+FX'};
+angle_delta = 40;
+iterations = 5;
+
 --------------------------
 axiom = 
 grammar = 
@@ -65,13 +77,12 @@ iterations =
 
 %}
 
-axiom = "F+F+F+F";
-grammar = {"F -> F+F-F-FF+F+F-F"};
-angle_delta = 90;
-iterations = 5;
-colours = get_gradient('#338811','#44DDFF',10);
-line_width = 0.07; % width of the plotted lines
-
+% 7) flower
+axiom = 'FX';
+grammar = {'X -> >[-FX]+FX'};
+angle_delta = 40;
+iterations = 8;
+colours = get_gradient('#7bc2db','#f518ed',10,'exp');
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -207,7 +218,7 @@ for i=1:iterations
     end
 
     if ~flag
-        x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
+        %x_all = [x_all, x_trail]; y_all = [y_all, y_trail];
     end
 
     % if there's no push/pop then the whole thing will just be drawn at this
@@ -246,5 +257,11 @@ axis([x_min - x_padding, x_max + x_padding, y_min - y_padding, y_max + y_padding
 
 % export the final graph
 disp("Exporting...");
-exportgraphics(gcf, 'temp.png', 'Resolution', 4196);
-disp("Finished exporting!");
+try
+    exportgraphics(gcf, 'temp.png', 'Resolution', 1024);
+    disp("Finished exporting!");
+catch ME
+    disp("Export might have failed");
+    rethrow(ME);
+end
+
